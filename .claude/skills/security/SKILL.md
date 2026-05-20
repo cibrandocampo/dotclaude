@@ -34,6 +34,8 @@ Run this checklist against your diff before committing. If any item fails, fix i
 - [ ] Authorisation checks verify the caller owns or has permission to access the resource (not just that they are logged in).
 - [ ] Sensitive operations require re-authentication or elevated checks where appropriate.
 - [ ] No security-by-obscurity: hidden URLs or fields are not access control.
+- [ ] CSRF protection is in place for any state-changing request made via browser (cookies/sessions). Token-based APIs using `Authorization` header are exempt.
+- [ ] Rate limiting is applied to authentication endpoints (login, password reset, token refresh) and any expensive or sensitive operation.
 
 ## Data Exposure
 
@@ -47,6 +49,13 @@ Run this checklist against your diff before committing. If any item fails, fix i
 - [ ] New dependencies are well-maintained, widely used, and necessary.
 - [ ] No dependency added just for convenience when the standard library covers the need.
 - [ ] Pinned versions in lockfiles are not blindly upgraded without reviewing the changelog.
+
+## HTTP Security Headers (frontend / server)
+
+- [ ] `Content-Security-Policy` is set and restricts `script-src` to known origins. No `unsafe-inline` or `unsafe-eval` unless explicitly justified.
+- [ ] `X-Content-Type-Options: nosniff` is set.
+- [ ] `X-Frame-Options: DENY` (or `SAMEORIGIN`) is set to prevent clickjacking.
+- [ ] `Strict-Transport-Security` is set in production (HTTPS only).
 
 ## File & Path Handling
 

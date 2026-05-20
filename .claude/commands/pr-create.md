@@ -1,24 +1,29 @@
 ---
 description: Analyze branch changes and create a GitHub PR with a structured, relevance-ordered body
-argument-hint: <base-branch (optional, default: main)>
+argument-hint: <base-branch (optional)>
 ---
 
 # Create PR
 
 **Goal**: understand what changed in this branch, then open a GitHub PR with a well-structured body.
-**Base branch**: use `$1` if provided, otherwise `main`.
+**Base branch**: use `$1` if provided. Otherwise auto-detect: use `develop` if it exists, then `main`, then `master`.
+
+```bash
+# Detect base branch (skip if $1 was provided)
+git branch --list develop main master
+```
 
 ---
 
 ## Step 1 — Understand the Branch
 
-Run these commands to gather full context:
+Run these commands to gather full context (replace `<base>` with the detected base branch):
 
 ```bash
 git branch --show-current
-git log main..HEAD --oneline
-git diff main...HEAD --stat
-git diff main...HEAD
+git log <base>..HEAD --oneline
+git diff <base>...HEAD --stat
+git diff <base>...HEAD
 ```
 
 Read any task file referenced by the commits (`docs/tasks/*.md`) if it exists — it contains objective, design decisions, and test results from QA.
@@ -89,7 +94,7 @@ Closes #<n>
 
 ## Step 4 — Create Branch and PR
 
-### Branch (if still on main)
+### Branch (if still on base branch)
 
 ```bash
 git checkout -b <type>/<descriptive-slug>

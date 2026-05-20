@@ -27,7 +27,9 @@ If there are no changes, inform the user and stop.
 
 ## Step 2 — Update Documentation
 
-Review whether the changes require documentation updates:
+Skip this step entirely if the changes came from `/fix` and touched no structure, conventions, or configuration.
+
+Otherwise, review whether the changes require documentation updates:
 
 ### Documentation Checklist
 
@@ -39,21 +41,13 @@ Review whether the changes require documentation updates:
 
 For each applicable item: read the current file, update with the new information, don't add unnecessary documentation.
 
-Ask the user with `AskUserQuestion` if there is anything additional to document.
-
 ---
 
 ## Step 3 — Pre-Commit Validation
 
 **Skip this step if `$1` has `## Code Review — APPROVED`** — QA already ran the full suite.
 
-Otherwise, run through this sequence in order. Do not proceed if any step fails.
-
-**1. Lint & format** — run the project's linter and formatter (see `dev-workflow` skill).
-
-**2. Tests** — run the full test suite (see `dev-workflow` skill). Do not commit with broken tests.
-
-**3. Security review** — consult the `security` skill and run its checklist against `git diff --staged`. Fix any issue before continuing.
+Otherwise, run the pre-commit sequence defined in the `git-conventions` skill. Do not proceed if any step fails.
 
 ---
 
@@ -94,18 +88,7 @@ git push -u origin <branch>
 
 ### Create PR
 
-Follow the **`pr-create` command** format to build the PR body:
-- Summary bullets ordered from most to least functional impact.
-- Issues section (`Closes #n`) only if a tracked issue is resolved.
-- Notes section only if a critical design decision was made.
-- Test plan with `[x]` for already-run tests and `[ ]` for reviewer checks.
-
-```bash
-gh pr create --title "<concise title>" --body "$(cat <<'EOF'
-<body following pr-create format>
-EOF
-)"
-```
+Run `/pr-create` — it will analyse the branch, build the PR body, and open the PR.
 
 ---
 
@@ -136,8 +119,7 @@ Inform the user with:
 
 ## Unbreakable Rules
 
-- **Pre-commit sequence**: lint → tests → security review → commit. In that order, every time.
-- **Apply `git-conventions` skill**: format, commit rules, and pre-commit hook handling.
+- **`git-conventions` skill**: apply it for the pre-commit sequence, commit format, and pre-commit hook handling.
 - **Never `push --force`**: if there are conflicts, resolve with merge.
 - **Green pipeline**: do not consider it done until CI passes.
 - **If CI fails, fix it**: do not ignore it or ask the user to handle it manually.

@@ -7,9 +7,26 @@ description: Architecture validation before implementing. Use at the start of an
 
 Before implementing, answer these questions. If any answer is "no" or "unsure", stop and resolve it with the user.
 
-## Layer Responsibilities
+## Right-Size the Structure First
 
-The project follows a layered architecture. Each layer has a strict responsibility:
+Not every project needs the same level of layering. Apply the minimum structure that keeps the project clean and maintainable — no more.
+
+| Project type | Appropriate structure |
+|---|---|
+| Script / utility | Functions in modules. No layers needed. Keep related logic together. |
+| Simple CRUD API | Routes → service functions → DB calls. Three logical areas, no formal layers. |
+| Mid-size app | Separate business logic from HTTP handlers and DB access. Clear module boundaries. |
+| Complex domain | Full layered architecture: Domain / Application / Infrastructure / Interface. |
+
+**The rule**: structure must be chosen at the start and applied consistently — not added later as an afterthought. A simple structure chosen on day one is far better than a complex structure bolted on halfway through.
+
+**The anti-rule**: do not build cathedrals for what is a village chapel. If the project is a simple API, do not introduce domain events, ports & adapters, and abstract repositories. That is overengineering, and it slows everything down.
+
+When in doubt, choose the simpler level. It is always easier to add structure later than to remove it.
+
+---
+
+## Layer Responsibilities (for mid-size and complex projects)
 
 | Layer | Contains | Must NOT contain |
 |-------|----------|-----------------|
