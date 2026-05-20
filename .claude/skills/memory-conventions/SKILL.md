@@ -5,9 +5,24 @@ description: How to use MEMORY.md — what to record, how to structure it, and w
 
 # Memory Conventions
 
-`MEMORY.md` is a living document that captures knowledge that is **not derivable from reading the code**. It bridges sessions — what you learn in one conversation should not be re-learned in the next.
+## Two Memory Systems — Use the Right One
 
-## What to Record
+Claude Code has two distinct memory systems. Do not confuse them.
+
+| | `MEMORY.md` (project) | Auto-memory (harness) |
+|---|---|---|
+| **Lives in** | Project root, committed to the repo | `~/.claude/projects/.../memory/` |
+| **Scope** | Project knowledge | User preferences |
+| **Who sees it** | Any developer (or Claude) working on this repo | Only the current user |
+| **Contains** | Gotchas, architecture decisions, env quirks, recurring patterns | User feedback, workflow preferences, personal context |
+
+**Rule**: if the knowledge is about the project (technical, architectural, environmental), it goes in `MEMORY.md`. If it is about how the user works or what they prefer, it goes in the harness auto-memory.
+
+---
+
+`MEMORY.md` is a living document that captures project knowledge that is **not derivable from reading the code**. It bridges sessions and developers — what is learned working on this project should not be re-learned next time.
+
+## What to Record in MEMORY.md
 
 ### Record these:
 - **Gotchas and traps**: things that look one way but behave another. "The X service must be restarted after changing Y, or the change is not picked up."
@@ -22,6 +37,7 @@ description: How to use MEMORY.md — what to record, how to structure it, and w
 - Things already documented in `CLAUDE.md` or skill files — don't duplicate.
 - Temporary task state or in-progress notes — those belong in task files.
 - Anything obvious from reading the code with normal attention.
+- User preferences or workflow feedback — those belong in the harness auto-memory.
 
 ## Structure
 

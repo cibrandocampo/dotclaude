@@ -27,7 +27,7 @@ project/
 
 ## Services
 
-> _Fill in: list the services defined in dev/docker-compose.yml and their dev ports._
+> _Fill in: list the services defined in dev/docker-compose.yml. Dev ports follow the prefix-with-1 convention defined in CLAUDE.md §8._
 
 | Service | Description | Dev port | Internal port |
 |---------|-------------|----------|---------------|

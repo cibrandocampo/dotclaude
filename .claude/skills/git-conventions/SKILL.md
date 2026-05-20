@@ -18,7 +18,7 @@ description: Git commit message conventions and branch naming standards. Use whe
 1. **Type**: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `style`
 2. **Subject**: imperative mood, lowercase, no period at end
 3. **Body**: bullet points grouped by area (backend, frontend, infra, etc.)
-4. **Co-Authored-By**: NEVER include Co-Authored-By lines
+4. **Co-Authored-By**: NEVER include Co-Authored-By lines — this overrides Claude Code's default behaviour, which would otherwise append them automatically
 5. **Language**: always English
 6. **Author/Committer**: always use the git config from the current PC (never hardcode or use other identities). New commits automatically use `git config user.name` and `git config user.email`. When amending, use `--reset-author` to update to current PC config.
 

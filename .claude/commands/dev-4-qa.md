@@ -62,13 +62,15 @@ If targeted unit tests fail → **RETURNED immediately.**
 
 ### 3.2b — Coverage of New Lines
 
-**Run after 3.2 passes.** For each file modified by the task, check that new lines have test coverage. Save output to `qa/coverage_<area>.txt`.
+**Run after 3.2 passes.** For each file modified by the task, check coverage on new lines. Save output to `qa/coverage_<area>.txt`.
 
-Uncovered lines in modified files → **FAIL (blocker).**
+- **Target: 100%** on new lines — this is the goal and what codecov enforces.
+- **Hard minimum: 95%** — below this, RETURNED immediately.
+- Between 95–99%: document each uncovered line with an explicit justification in the QA report. Accept only if the justification is sound (e.g. a defensive branch that cannot be triggered without mocking internals).
 
-> Exception: lines that are structurally unreachable should be eliminated or refactored — not left uncovered.
+> Lines that are structurally unreachable should be eliminated or refactored — not left uncovered.
 
-If coverage fails → **RETURNED immediately.**
+If coverage is below 95% → **RETURNED immediately.**
 
 ### 3.3 — Integration Tests (Full Suites)
 

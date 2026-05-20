@@ -90,6 +90,17 @@ For each item in the task list:
 4. **Self-review**: re-read the code you wrote. Are there typos, missing imports, inconsistencies? Fix them.
 5. Mark as `completed` only when the deliverable is finished and reviewed.
 
+### If the task grows mid-execution
+
+If during implementation you discover that the scope is significantly larger than the task described — unexpected dependencies, missing foundations, design decisions that require user input — **stop immediately**. Do not push forward with a half-baked solution.
+
+Inform the user:
+- What you found and why it changes the scope.
+- What has been done so far (if anything).
+- Suggest: **"This is better handled with `/dev-1-plan` to redesign the approach before continuing."**
+
+Leave the code in a clean state (no broken imports, no half-written functions) before stopping.
+
 ---
 
 ## Step 4 — Verify DoD
