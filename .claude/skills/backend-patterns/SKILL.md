@@ -22,16 +22,20 @@ Tests:           # e.g. pytest, Jest, Go test
 
 ## Project Structure
 
-> _Fill in: directory layout and what lives where._
+> _Fill in: directory layout and what lives where. All backend code lives under `backend/` in the monorepo._
 
 ```
-src/
+backend/
   # Fill in the project's actual structure
   # e.g. for Django:
   # apps/<app>/models.py
   # apps/<app>/views.py
   # apps/<app>/serializers.py
   # apps/<app>/tests/
+  # e.g. for FastAPI / Node:
+  # src/domain/
+  # src/application/
+  # src/infrastructure/
 ```
 
 ## Reuse-First Principle

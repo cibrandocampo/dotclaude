@@ -88,7 +88,38 @@ Task files live in `docs/tasks/`. Plan files live in `docs/plans/`.
 - The feature branch is defined in `/dev-1-plan` and created automatically when the first task runs (`/dev-3-run`), branching from `develop` if it exists, otherwise from `main`/`master`.
 - **Commit once per feature** — at the end of the full cycle (`/push`), after all tasks are approved. Do not commit after individual tasks unless the user explicitly requests it.
 
-## 8. Testing
+## 8. Monorepo Structure
+
+All projects follow a monorepo layout. Everything lives in a single repository:
+
+```
+project/
+  docs/          # documentation, plans (docs/plans/), tasks (docs/tasks/)
+  frontend/      # frontend application
+  backend/       # backend application
+  infra/         # Docker Compose files, CI/CD, reverse proxy, scripts
+  CLAUDE.md
+```
+
+- `infra/docker-compose.yml` — production compose (uses COPY/build, no live reload)
+- `infra/dev/docker-compose.yml` — development compose (bind mounts, live reload)
+
+When exploring or modifying code, respect these boundaries. A backend change lives in `backend/`, a frontend change in `frontend/`. Cross-cutting concerns (environment, networking, scripts) live in `infra/`.
+
+## 9. Docker-First
+
+**The user's machine is sacred. Never install or run project dependencies on the host.**
+
+- NEVER run language runtimes directly on the host: no `python`, `node`, `npm`, `pip`, `poetry`, `go`, `ruby`, etc.
+- NEVER install project dependencies on the host: no `npm install`, `pip install`, `bundle install`, etc.
+- ALL project commands go through Docker: `docker compose -f infra/dev/docker-compose.yml exec <service> <command>`
+- The only tools allowed on the host are: `docker`, `git`, `gh`, and other system-level tools explicitly listed in `dev-workflow`.
+
+**Why**: dependency conflicts, version mismatches, and environment drift are eliminated. What runs in Docker is exactly what runs in production.
+
+Exceptions must be explicitly documented in the `dev-workflow` skill with a justification.
+
+## 10. Testing
 
 **ALWAYS consult the `test-discipline` skill before writing or debugging any test.**
 

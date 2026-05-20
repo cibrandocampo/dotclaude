@@ -78,11 +78,12 @@ The 1/2/3 rule: once is fine, twice is a pattern, three times means extract.
 
 ## Component Patterns
 
-> _Fill in: conventions for pages vs shared components, naming, file structure, props patterns._
+> _Fill in: conventions for pages vs shared components, naming, file structure, props patterns. All frontend code lives under `frontend/` in the monorepo._
 
 ```
-Pages:           # e.g. src/pages/, one file per route
-Shared:          # e.g. src/components/, only truly reusable UI
+Root:            # frontend/
+Pages:           # e.g. frontend/src/pages/, one file per route
+Shared:          # e.g. frontend/src/components/, only truly reusable UI
 Naming:          # e.g. PascalCase files, named exports
 Co-location:     # e.g. component + styles + tests in same folder
 ```

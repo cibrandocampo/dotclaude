@@ -89,15 +89,15 @@ Never vague items like "works correctly" — always concrete.
 
 | # | Description | Command | File | PASS condition |
 |---|-------------|---------|------|----------------|
-| 1 | Tests | `<test-command>` | `tests.txt` | 0 failures |
+| 1 | Tests | `docker compose -f infra/dev/docker-compose.yml exec <service> <test-command>` | `tests.txt` | 0 failures |
 | 2 | ... | ... | ... | ... |
 
 ## Files to Create/Modify
 
 | File | Action |
 |------|--------|
-| `src/models/Foo.py` | MODIFY |
-| `src/pages/NewPage.jsx` | CREATE |
+| `backend/src/models/foo.py` | MODIFY |
+| `frontend/src/pages/NewPage.jsx` | CREATE |
 ```
 
 ### Content Rules
