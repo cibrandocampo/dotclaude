@@ -37,6 +37,8 @@ If tests fail: fix and re-run. Do not proceed with broken tests.
 
 Tell the user: **"Fix complete. Ready for `/push`."**
 
+> The branch for this fix will be created by `/push` (Step 5) if you are currently on `main`. No need to create it manually.
+
 ---
 
 ## Unbreakable Rules

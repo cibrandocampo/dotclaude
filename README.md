@@ -55,6 +55,7 @@ The template covers:
     git-conventions/ # Commit format, branch naming, pre-commit sequence
     security/        # Security checklist for every commit
     test-discipline/ # How to write and debug tests
+    ci/              # GitHub Actions conventions — pipeline, Codecov, Docker publishing
     memory-conventions/ # What goes in MEMORY.md vs Claude's auto-memory
 CLAUDE.md            # Behavioral guidelines — the foundation of everything
 ```
@@ -63,40 +64,81 @@ CLAUDE.md            # Behavioral guidelines — the foundation of everything
 
 ## How to use this as a template
 
-### 1. Copy into your project
+### Option A — GitHub template (recommended)
+
+Click **Use this template** at the top of this repository. GitHub creates a new repo with all files in place. Clone it and go straight to the [setup checklist](#project-setup-checklist).
+
+### Option B — Copy into an existing project
+
+If you are adding this to a project that already exists:
 
 ```bash
-cp -r dotclaude/.claude your-project/
-cp dotclaude/CLAUDE.md your-project/
+# Clone the template
+git clone https://github.com/cibrandocampo/dotclaude.git
+
+# Copy everything into your project
+cp -r dotclaude/.claude        your-project/
+cp -r dotclaude/.github        your-project/
+cp -r dotclaude/dev            your-project/
+cp    dotclaude/docker-compose.yml  your-project/
+cp    dotclaude/.env.example   your-project/
+cp    dotclaude/MEMORY.md      your-project/
+cp    dotclaude/CLAUDE.md      your-project/
 ```
 
-Or use this repository as a GitHub template to start a new repo with everything in place.
+> If your project already has a `.github/` directory, merge the `workflows/` folder manually to avoid overwriting existing workflows.
 
-### 2. Customize the two placeholder skills
+### Option C — Start from scratch in an empty repo
 
-These skills are intentionally left as templates — fill them in with your project's actual stack:
+```bash
+# Clone the template directly as your new project
+git clone https://github.com/cibrandocampo/dotclaude.git my-project
+cd my-project
 
-**`.claude/skills/dev-workflow/SKILL.md`**
-Replace the placeholder commands with the real ones for your services (test runner, linter, migration command, etc.).
-
-**`.claude/skills/backend-patterns/SKILL.md`** and **`.claude/skills/frontend-patterns/SKILL.md`**
-Fill in your framework, project structure, naming conventions, and testing approach.
-
-Everything else works out of the box.
-
-### 3. Create a MEMORY.md in the project root
-
-```markdown
-# MEMORY — Your Project Name
-
-## Architecture decisions
-
-## Gotchas
-
-## Recurring patterns
+# Point it at your own remote
+git remote set-url origin https://github.com/<you>/<my-project>.git
+git push -u origin main
 ```
 
-Claude will populate it as the project evolves. See `memory-conventions` skill for what belongs here.
+### Next: go through the setup checklist
+
+Whichever option you chose, follow the [project setup checklist](#project-setup-checklist) before starting development. Claude will warn you when it hits an unfilled placeholder, but filling everything in upfront avoids mid-session interruptions.
+
+---
+
+## Project setup checklist
+
+Everything that needs to be filled in before starting development. Claude will warn you if it hits an unfilled placeholder, but going through this list upfront saves time.
+
+**Skills — fill these in first, before any development work**
+
+- [ ] `.claude/skills/dev-workflow/SKILL.md` — service names, test, lint, build, and migration commands
+- [ ] `.claude/skills/backend-patterns/SKILL.md` — language, framework, directory structure, naming conventions
+- [ ] `.claude/skills/frontend-patterns/SKILL.md` — framework, routing, state, styling, design tokens
+
+**Docker**
+
+- [ ] `docker-compose.yml` — replace `<dockerhub-org>/<project>` with real image names
+- [ ] `dev/docker-compose.yml` — replace placeholder services with real ones (Dockerfiles, volumes, commands)
+
+**Environment**
+
+- [ ] `.env.example` — add all variables the project needs (no secrets, just keys)
+- [ ] `.env` — copy from `.env.example` and fill in real values (never commit this file)
+
+**GitHub Actions**
+
+- [ ] `.github/workflows/ci.yml` — replace all `<placeholder>` values (commands, image names, coverage files)
+- [ ] `.github/workflows/weekly-rebuild.yml` — replace `<dockerhub-org>/<project>` with real image names
+
+**Project memory**
+
+- [ ] `MEMORY.md` — replace `<Project Name>` with the actual project name
+
+**Optional**
+
+- [ ] `CLAUDE.md` — merge any project-specific behavioral rules that override or extend the defaults
+- [ ] `.claude/commands/dev-4-qa.md` — review step 3.2b (coverage): thresholds and commands depend on the stack's coverage tool (e.g. `coverage.py`, `vitest --coverage`, `go test -cover`). Adjust to match what `dev-workflow` defines.
 
 ---
 
@@ -168,22 +210,10 @@ Claude explores the target area, produces a numbered findings table grouped by s
 | `git-conventions` | Before every commit and branch creation |
 | `security` | Before every commit — full checklist against the diff |
 | `test-discipline` | When writing or debugging any test |
-| `ci` | When creating or modifying GitHub Actions workflows — pipeline structure, Codecov, Docker publishing, dependency conventions |
+| `ci` | When creating or modifying GitHub Actions workflows — Docker-first testing, pipeline structure, Codecov, Docker publishing |
 | `api-design` | When designing or reviewing REST endpoints |
 | `dev-workflow` | For all Docker commands during development |
 | `backend-patterns` | When writing backend code — conventions and structure |
 | `frontend-patterns` | When writing frontend code — conventions and structure |
 | `memory-conventions` | When deciding what to write to `MEMORY.md` |
 
----
-
-## What to customize per project
-
-| File | What to fill in |
-|------|----------------|
-| `.claude/skills/dev-workflow/SKILL.md` | Actual service names, test commands, lint commands, migration commands |
-| `.claude/skills/backend-patterns/SKILL.md` | Language, framework, DB, project structure, naming conventions |
-| `.claude/skills/frontend-patterns/SKILL.md` | Framework, routing, state, styling, design tokens, component patterns |
-| `.github/workflows/ci.yml` | Real lint, test, and build commands — replace the no-op placeholders |
-| `MEMORY.md` (project root) | Gotchas, architecture decisions, environment quirks — populated over time |
-| `CLAUDE.md` | Merge with any project-specific behavioral rules |

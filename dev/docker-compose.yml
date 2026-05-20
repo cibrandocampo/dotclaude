@@ -5,11 +5,13 @@ services:
   backend:
     image: alpine
     command: sh -c "echo 'backend placeholder' && sleep infinity"
+    env_file: ../.env
     ports:
       - "18000:8000"
 
   frontend:
     image: alpine
     command: sh -c "echo 'frontend placeholder' && sleep infinity"
+    env_file: ../.env
     ports:
       - "15173:5173"
