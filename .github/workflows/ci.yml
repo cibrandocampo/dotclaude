@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: docker compose -f dev/docker-compose.yml build backend
+
+      - name: Lint
+        run: docker compose -f dev/docker-compose.yml run --rm backend <lint-command>
+
+      - name: Test
+        run: docker compose -f dev/docker-compose.yml run --rm backend <test-command>
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: docker compose -f dev/docker-compose.yml build frontend
+
+      - name: Lint
+        run: docker compose -f dev/docker-compose.yml run --rm frontend <lint-command>
+
+      - name: Test
+        run: docker compose -f dev/docker-compose.yml run --rm frontend <test-command>
