@@ -133,6 +133,7 @@ Everything that needs to be filled in before starting development. Claude will w
 **Optional**
 
 - [ ] `CLAUDE.md` — merge any project-specific behavioral rules that override or extend the defaults
+- [ ] `.claude/commands/dev-4-qa.md` — review step 3.2b (coverage): thresholds and commands depend on the stack's coverage tool (e.g. `coverage.py`, `vitest --coverage`, `go test -cover`). Adjust to match what `dev-workflow` defines.
 
 ---
 
