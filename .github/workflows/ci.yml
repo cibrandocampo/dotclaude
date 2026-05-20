@@ -85,7 +85,7 @@ jobs:
   build-backend:
     name: Build & Push Backend
     needs: [test-backend, test-frontend]
-    if: github.event_name == 'push' || github.event_name == 'release'
+    if: vars.DOCKERHUB_ENABLED == 'true' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'release')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -124,7 +124,7 @@ jobs:
   build-frontend:
     name: Build & Push Frontend
     needs: [test-backend, test-frontend]
-    if: github.event_name == 'push' || github.event_name == 'release'
+    if: vars.DOCKERHUB_ENABLED == 'true' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'release')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

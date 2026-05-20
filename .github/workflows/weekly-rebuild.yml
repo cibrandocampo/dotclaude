@@ -7,6 +7,7 @@ on:
 jobs:
   rebuild-backend:
     name: Rebuild Backend
+    if: vars.DOCKERHUB_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +27,7 @@ jobs:
 
   rebuild-frontend:
     name: Rebuild Frontend
+    if: vars.DOCKERHUB_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

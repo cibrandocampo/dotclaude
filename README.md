@@ -130,6 +130,7 @@ Everything that needs to be filled in before starting development. Claude will w
 
 - [ ] `.github/workflows/ci.yml` — replace all `<placeholder>` values (commands, image names, coverage files)
 - [ ] `.github/workflows/weekly-rebuild.yml` — replace `<dockerhub-org>/<project>` with real image names
+- [ ] Set `DOCKERHUB_ENABLED=true` as a repository variable (Settings → Variables → Actions) once Docker Hub secrets are configured — build and publish jobs are gated on this variable and skip until it is set
 
 **Project memory**
 
@@ -217,3 +218,8 @@ Claude explores the target area, produces a numbered findings table grouped by s
 | `frontend-patterns` | When writing frontend code — conventions and structure |
 | `memory-conventions` | When deciding what to write to `MEMORY.md` |
 
+---
+
+## Acknowledgements
+
+The skills system in this template is inspired by [Andrej Karpathy](https://github.com/karpathy)'s approach to structuring AI assistant context. The reference implementation that informed this work is [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills).
