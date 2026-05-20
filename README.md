@@ -64,40 +64,45 @@ CLAUDE.md            # Behavioral guidelines — the foundation of everything
 
 ## How to use this as a template
 
-### 1. Copy into your project
+### Option A — GitHub template (recommended)
+
+Click **Use this template** at the top of this repository. GitHub creates a new repo with all files in place. Clone it and go straight to the [setup checklist](#project-setup-checklist).
+
+### Option B — Copy into an existing project
+
+If you are adding this to a project that already exists:
 
 ```bash
-cp -r dotclaude/.claude your-project/
-cp dotclaude/CLAUDE.md your-project/
+# Clone the template
+git clone https://github.com/cibrandocampo/dotclaude.git
+
+# Copy everything into your project
+cp -r dotclaude/.claude        your-project/
+cp -r dotclaude/.github        your-project/
+cp -r dotclaude/dev            your-project/
+cp    dotclaude/docker-compose.yml  your-project/
+cp    dotclaude/.env.example   your-project/
+cp    dotclaude/MEMORY.md      your-project/
+cp    dotclaude/CLAUDE.md      your-project/
 ```
 
-Or use this repository as a GitHub template to start a new repo with everything in place.
+> If your project already has a `.github/` directory, merge the `workflows/` folder manually to avoid overwriting existing workflows.
 
-### 2. Customize the two placeholder skills
+### Option C — Start from scratch in an empty repo
 
-These skills are intentionally left as templates — fill them in with your project's actual stack:
+```bash
+# Clone the template directly as your new project
+git clone https://github.com/cibrandocampo/dotclaude.git my-project
+cd my-project
 
-**`.claude/skills/dev-workflow/SKILL.md`**
-Replace the placeholder commands with the real ones for your services (test runner, linter, migration command, etc.).
-
-**`.claude/skills/backend-patterns/SKILL.md`** and **`.claude/skills/frontend-patterns/SKILL.md`**
-Fill in your framework, project structure, naming conventions, and testing approach.
-
-Everything else works out of the box.
-
-### 3. Create a MEMORY.md in the project root
-
-```markdown
-# MEMORY — Your Project Name
-
-## Architecture decisions
-
-## Gotchas
-
-## Recurring patterns
+# Point it at your own remote
+git remote set-url origin https://github.com/<you>/<my-project>.git
+git push -u origin main
 ```
 
-Claude will populate it as the project evolves. See `memory-conventions` skill for what belongs here.
+### Next: go through the setup checklist
+
+Whichever option you chose, follow the [project setup checklist](#project-setup-checklist) before starting development. Claude will warn you when it hits an unfilled placeholder, but filling everything in upfront avoids mid-session interruptions.
 
 ---
 
