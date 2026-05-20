@@ -217,3 +217,8 @@ Claude explores the target area, produces a numbered findings table grouped by s
 | `frontend-patterns` | When writing frontend code — conventions and structure |
 | `memory-conventions` | When deciding what to write to `MEMORY.md` |
 
+---
+
+## Acknowledgements
+
+The skills system in this template is inspired by [Andrej Karpathy](https://github.com/karpathy)'s approach to structuring AI assistant context. The reference implementation that informed this work is [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills).
