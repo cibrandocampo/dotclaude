@@ -101,6 +101,41 @@ Claude will populate it as the project evolves. See `memory-conventions` skill f
 
 ---
 
+## Project setup checklist
+
+Everything that needs to be filled in before starting development. Claude will warn you if it hits an unfilled placeholder, but going through this list upfront saves time.
+
+**Skills — fill these in first, before any development work**
+
+- [ ] `.claude/skills/dev-workflow/SKILL.md` — service names, test, lint, build, and migration commands
+- [ ] `.claude/skills/backend-patterns/SKILL.md` — language, framework, directory structure, naming conventions
+- [ ] `.claude/skills/frontend-patterns/SKILL.md` — framework, routing, state, styling, design tokens
+
+**Docker**
+
+- [ ] `docker-compose.yml` — replace `<dockerhub-org>/<project>` with real image names
+- [ ] `dev/docker-compose.yml` — replace placeholder services with real ones (Dockerfiles, volumes, commands)
+
+**Environment**
+
+- [ ] `.env.example` — add all variables the project needs (no secrets, just keys)
+- [ ] `.env` — copy from `.env.example` and fill in real values (never commit this file)
+
+**GitHub Actions**
+
+- [ ] `.github/workflows/ci.yml` — replace all `<placeholder>` values (commands, image names, coverage files)
+- [ ] `.github/workflows/weekly-rebuild.yml` — replace `<dockerhub-org>/<project>` with real image names
+
+**Project memory**
+
+- [ ] `MEMORY.md` — replace `<Project Name>` with the actual project name
+
+**Optional**
+
+- [ ] `CLAUDE.md` — merge any project-specific behavioral rules that override or extend the defaults
+
+---
+
 ## Development workflow
 
 There are three paths. Choose the one that fits the work.
@@ -176,16 +211,3 @@ Claude explores the target area, produces a numbered findings table grouped by s
 | `frontend-patterns` | When writing frontend code — conventions and structure |
 | `memory-conventions` | When deciding what to write to `MEMORY.md` |
 
----
-
-## What to customize per project
-
-| File | What to fill in |
-|------|----------------|
-| `.claude/skills/dev-workflow/SKILL.md` | Actual service names, test commands, lint commands, migration commands |
-| `.claude/skills/backend-patterns/SKILL.md` | Language, framework, DB, project structure, naming conventions |
-| `.claude/skills/frontend-patterns/SKILL.md` | Framework, routing, state, styling, design tokens, component patterns |
-| `.github/workflows/ci.yml` | Real lint, test, and build commands — replace the `<placeholder>` values |
-| `.github/workflows/weekly-rebuild.yml` | Docker Hub org and image names |
-| `MEMORY.md` (project root) | Gotchas, architecture decisions, environment quirks — populated over time |
-| `CLAUDE.md` | Merge with any project-specific behavioral rules |
