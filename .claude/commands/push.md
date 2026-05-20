@@ -88,7 +88,7 @@ git push -u origin <branch>
 
 ### Create PR
 
-Run `/pr-create` — it will analyse the branch, build the PR body, and open the PR.
+Invoke the `pr-create` skill — it will analyse the branch, build the PR body, and open the PR.
 
 ---
 
