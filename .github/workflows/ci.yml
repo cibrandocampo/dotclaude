@@ -19,35 +19,36 @@ jobs:
         run: cp .env.example .env
 
       - name: Build
+        # Replace 'backend' with your actual service name in dev/docker-compose.yml
         run: docker compose -f dev/docker-compose.yml build backend
 
       - name: Lint
         # --no-deps: lint does not need db/redis
-        run: docker compose -f dev/docker-compose.yml run --rm --no-deps backend <lint-command>
+        # Replace with: docker compose -f dev/docker-compose.yml run --rm --no-deps backend <your-lint-command>
         # e.g.: ruff check . && ruff format --check .
+        run: echo "no-op — replace with actual lint command"
 
       - name: Test
-        # depends_on services (db, redis) start automatically
-        run: docker compose -f dev/docker-compose.yml run --rm backend <test-with-coverage-command>
+        # depends_on services (db, redis) start automatically via docker compose
+        # Replace with: docker compose -f dev/docker-compose.yml run --rm backend <your-test-command>
         # e.g.: coverage run manage.py test && coverage xml
+        # Coverage file appears on host via bind mount — no extraction step needed
+        run: echo "no-op — replace with actual test command"
         env:
-          DATABASE_URL: postgres://<user>:<password>@db:5432/<db>
-          REDIS_URL: redis://redis:6379/0
-          # Add any other CI-specific overrides here
+          # Add CI-specific env overrides here (secrets from GitHub Actions)
+          # DATABASE_URL: postgres://user:password@db:5432/myapp
+          # REDIS_URL: redis://redis:6379/0
+          PLACEHOLDER: "true"
 
-      # Coverage file appears on the host via bind mount (backend/ → /app/)
-      # If paths are relative to backend/, apply the monorepo fix:
-      # run: sed -i 's|filename="|filename="backend/|g' backend/coverage.xml
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: backend/<coverage-file>
-          # e.g.: backend/coverage.xml
-          flags: backend
-          fail_ci_if_error: false
-          verbose: true
+      # Uncomment and configure once tests produce a coverage file:
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: backend/coverage.xml   # adjust path to your coverage file
+      #     flags: backend
+      #     fail_ci_if_error: false
+      #     verbose: true
 
   test-frontend:
     name: Frontend
@@ -59,24 +60,27 @@ jobs:
         run: cp .env.example .env
 
       - name: Build
+        # Replace 'frontend' with your actual service name in dev/docker-compose.yml
         run: docker compose -f dev/docker-compose.yml build frontend
 
       - name: Lint
-        run: docker compose -f dev/docker-compose.yml run --rm --no-deps frontend <lint-command>
+        # Replace with: docker compose -f dev/docker-compose.yml run --rm --no-deps frontend <your-lint-command>
         # e.g.: npm run lint -- --max-warnings 0
+        run: echo "no-op — replace with actual lint command"
 
       - name: Test
-        run: docker compose -f dev/docker-compose.yml run --rm --no-deps frontend <test-with-coverage-command>
+        # Replace with: docker compose -f dev/docker-compose.yml run --rm --no-deps frontend <your-test-command>
         # e.g.: npm run test:coverage
+        run: echo "no-op — replace with actual test command"
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: frontend/<coverage-file>
-          # e.g.: frontend/coverage/coverage-final.json
-          flags: frontend
-          fail_ci_if_error: false
+      # Uncomment and configure once tests produce a coverage file:
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: frontend/coverage/coverage-final.json   # adjust path
+      #     flags: frontend
+      #     fail_ci_if_error: false
 
   build-backend:
     name: Build & Push Backend
