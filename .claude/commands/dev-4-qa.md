@@ -186,11 +186,22 @@ Run `/dev-3-run $1` to fix the listed blockers.
 
 ---
 
-## Final Step — Update INDEX.md
+## Final Step — Update INDEX.md and Suggest Next Action
 
 1. Read `docs/tasks/INDEX.md`.
 2. Update the **QA** column for the task: APPROVED → `Approved`, RETURNED → `Returned (B1, B2...)`.
 3. If INDEX.md doesn't exist, skip without error.
+
+### If APPROVED — check whether the feature is complete
+
+Read the full series in INDEX.md:
+- **If there are pending tasks**: inform the user and suggest the next one:
+  > "Task TXXX approved. Next: `/dev-3-run TYYY`"
+- **If all tasks in the series are approved**: the feature is complete. Suggest closing the cycle:
+  > "All tasks approved. Ready to commit and open a PR: `/push`"
+
+> By default, the commit happens once — when the full feature is done, not after each task.
+> If the user wants to commit after a specific task, they can run `/push` at any point.
 
 ---
 

@@ -48,6 +48,13 @@ Create the plan document at `docs/plans/<feature-name>.md` with this structure:
 ```markdown
 # Feature Name
 
+## Branch
+
+`feat/<feature-name>`
+
+> Branch will be created from `develop` if it exists, otherwise from `main`/`master`.
+> All tasks in this feature will be implemented on this branch.
+
 ## Context
 
 What problem it solves. Why it is needed now.
@@ -94,6 +101,8 @@ Numbered list of high-level steps.
 
 (If there are decisions yet to be made, list them here. They must be closed before creating tasks.)
 ```
+
+Confirm the branch name with the user before saving the document — it will be used for the entire feature.
 
 Present the document to the user and ask for feedback.
 

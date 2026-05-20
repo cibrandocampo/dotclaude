@@ -17,13 +17,40 @@ This is a one-person team. **There is no such thing as a "pre-existing error".**
 
 ---
 
-## Step 0 — Locate the Task
+## Step 0 — Locate the Task and Prepare the Branch
+
+### Locate the task
 
 Search in `docs/tasks/` for a file matching `$1`. It can be:
 - Exact ID: `T001` → search `docs/tasks/T001*.md`
 - Partial name: `T001_auth` → search `docs/tasks/T001_auth*.md`
 
 If no match is found, list available files in `docs/tasks/` and ask the user to choose.
+
+### Create the feature branch (first task only)
+
+Check `docs/tasks/INDEX.md` to determine if this is the **first task of the series** (no prior tasks with status "Completed" in the same series).
+
+If it is the first task:
+
+1. Read the plan document linked in INDEX.md and extract the `## Branch` value.
+2. Check if the branch already exists:
+   ```bash
+   git branch --list <branch-name>
+   ```
+3. If it does not exist, create it from the right base:
+   ```bash
+   # Use develop if it exists, otherwise main/master
+   git checkout develop 2>/dev/null || git checkout main 2>/dev/null || git checkout master
+   git pull
+   git checkout -b <branch-name>
+   ```
+4. If it already exists, check it out:
+   ```bash
+   git checkout <branch-name>
+   ```
+
+If this is not the first task, verify you are already on the correct branch before continuing.
 
 ---
 

@@ -83,6 +83,11 @@ Three paths depending on the type of work. When in doubt, use the simplest one t
 
 Task files live in `docs/tasks/`. Plan files live in `docs/plans/`.
 
+### Branch and commit conventions
+
+- The feature branch is defined in `/dev-1-plan` and created automatically when the first task runs (`/dev-3-run`), branching from `develop` if it exists, otherwise from `main`/`master`.
+- **Commit once per feature** — at the end of the full cycle (`/push`), after all tasks are approved. Do not commit after individual tasks unless the user explicitly requests it.
+
 ## 8. Testing
 
 **ALWAYS consult the `test-discipline` skill before writing or debugging any test.**
