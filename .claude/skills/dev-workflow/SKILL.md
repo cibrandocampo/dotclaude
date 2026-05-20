@@ -7,55 +7,61 @@ description: Development commands and environment setup for this project. Custom
 
 > **Customize this skill for your project.** Replace service names and commands with the actual ones for your stack. The Docker-first rule is non-negotiable — see CLAUDE.md section 9.
 
-## Monorepo Structure
+## Project Layout
 
 ```
 project/
-  docs/          # documentation, plans, tasks
-  frontend/      # frontend application
-  backend/       # backend application
-  infra/         # Docker Compose, CI/CD, scripts
-    docker-compose.yml        # production
-    dev/
-      docker-compose.yml      # development (bind mounts)
+  docker-compose.yml        # production (pre-built images, no bind mounts)
+  dev/
+    docker-compose.yml      # development (local builds, bind mounts)
+    Dockerfile.backend
+    Dockerfile.frontend
+  .env                      # shared by both compose files
+  .env.example
+  docs/
+  frontend/
+  backend/
 ```
+
+**Always use `dev/docker-compose.yml` for development.** Never use the root `docker-compose.yml` locally — it is for production only.
 
 ## Services
 
-> _Fill in: list the services defined in infra/dev/docker-compose.yml and their ports._
+> _Fill in: list the services defined in dev/docker-compose.yml and their dev ports._
 
-| Service | Description | Port |
-|---------|-------------|------|
-| `backend` | Backend API | `<port>` |
-| `frontend` | Frontend dev server | `<port>` |
-| `db` | Database | `<port>` |
-| | _add more as needed_ | |
+| Service | Description | Dev port | Internal port |
+|---------|-------------|----------|---------------|
+| `backend` | Backend API | `18000` | `8000` |
+| `frontend` | Frontend dev server | `15173` | `5173` |
+| `db` | Database | `15432` | `5432` |
+| `redis` | Cache / queue | `16379` | `6379` |
+| | _add more as needed_ | | |
 
 ## Start / Stop
 
 ```bash
 # Start all services
-docker compose -f infra/dev/docker-compose.yml up -d
+docker compose -f dev/docker-compose.yml up -d
 
 # Stop all services
-docker compose -f infra/dev/docker-compose.yml down
+docker compose -f dev/docker-compose.yml down
 
 # View logs
-docker compose -f infra/dev/docker-compose.yml logs -f <service>
+docker compose -f dev/docker-compose.yml logs -f <service>
 
-# Restart a service
-docker compose -f infra/dev/docker-compose.yml restart <service>
+# Restart a service (e.g. after changing a singleton or env var)
+docker compose -f dev/docker-compose.yml restart <service>
 ```
 
 ## Run Tests
 
 ```bash
 # Backend
-docker compose -f infra/dev/docker-compose.yml exec backend <test-command>
+docker compose -f dev/docker-compose.yml exec backend <test-command>
 # e.g.: pytest, python manage.py test, go test ./...
 
 # Frontend
-docker compose -f infra/dev/docker-compose.yml exec frontend <test-command>
+docker compose -f dev/docker-compose.yml exec frontend <test-command>
 # e.g.: npx vitest run, npm test
 
 # E2E
@@ -67,44 +73,52 @@ docker compose -f infra/dev/docker-compose.yml exec frontend <test-command>
 
 ```bash
 # Backend
-docker compose -f infra/dev/docker-compose.yml exec backend <lint-command>
-docker compose -f infra/dev/docker-compose.yml exec backend <format-command>
+docker compose -f dev/docker-compose.yml exec backend <lint-command>
+docker compose -f dev/docker-compose.yml exec backend <format-command>
 
 # Frontend
-docker compose -f infra/dev/docker-compose.yml exec frontend <lint-command>
-docker compose -f infra/dev/docker-compose.yml exec frontend <format-command>
+docker compose -f dev/docker-compose.yml exec frontend <lint-command>
+docker compose -f dev/docker-compose.yml exec frontend <format-command>
 ```
 
 ## Build
 
 ```bash
-# Frontend production build
-docker compose -f infra/dev/docker-compose.yml exec frontend <build-command>
+# Frontend production build (verify before pushing)
+docker compose -f dev/docker-compose.yml exec frontend <build-command>
 
-# Backend (if applicable)
-docker compose -f infra/dev/docker-compose.yml exec backend <build-command>
+# Rebuild a service image after Dockerfile changes
+docker compose -f dev/docker-compose.yml build <service>
 ```
 
 ## Coverage
 
 ```bash
 # Backend
-docker compose -f infra/dev/docker-compose.yml exec backend <coverage-command>
+docker compose -f dev/docker-compose.yml exec backend <coverage-command>
 
 # Frontend
-docker compose -f infra/dev/docker-compose.yml exec frontend <coverage-command>
+docker compose -f dev/docker-compose.yml exec frontend <coverage-command>
 ```
 
 ## Database
 
 ```bash
 # Run migrations
-docker compose -f infra/dev/docker-compose.yml exec backend <migrate-command>
+docker compose -f dev/docker-compose.yml exec backend <migrate-command>
 
 # Open DB shell
-docker compose -f infra/dev/docker-compose.yml exec db <db-shell-command>
+docker compose -f dev/docker-compose.yml exec db <db-shell-command>
 # e.g.: psql -U <user> <db>, mysql -u <user> -p
 ```
+
+## Environment Variables
+
+Both compose files share `.env` at the project root.
+- `docker-compose.yml` (prod): `env_file: .env`
+- `dev/docker-compose.yml` (dev): `env_file: ../.env`
+
+Never commit `.env`. Commit `.env.example` with all keys but no secrets.
 
 ## Host-Allowed Tools
 

@@ -89,7 +89,7 @@ Never vague items like "works correctly" — always concrete.
 
 | # | Description | Command | File | PASS condition |
 |---|-------------|---------|------|----------------|
-| 1 | Tests | `docker compose -f infra/dev/docker-compose.yml exec <service> <test-command>` | `tests.txt` | 0 failures |
+| 1 | Tests | `docker compose -f dev/docker-compose.yml exec <service> <test-command>` | `tests.txt` | 0 failures |
 | 2 | ... | ... | ... | ... |
 
 ## Files to Create/Modify

@@ -94,17 +94,39 @@ All projects follow a monorepo layout. Everything lives in a single repository:
 
 ```
 project/
-  docs/          # documentation, plans (docs/plans/), tasks (docs/tasks/)
-  frontend/      # frontend application
-  backend/       # backend application
-  infra/         # Docker Compose files, CI/CD, reverse proxy, scripts
+  docker-compose.yml     # production — pre-built images, no bind mounts
+  dev/
+    docker-compose.yml   # development — local builds, bind mounts, live reload
+    Dockerfile.backend
+    Dockerfile.frontend
+    # (other dev-only Dockerfiles as needed)
+  .env                   # shared by both compose files
+  .env.example           # committed, no secrets
+  docs/                  # documentation, plans (docs/plans/), tasks (docs/tasks/)
+  frontend/              # frontend application
+  backend/               # backend application
   CLAUDE.md
 ```
 
-- `infra/docker-compose.yml` — production compose (uses COPY/build, no live reload)
-- `infra/dev/docker-compose.yml` — development compose (bind mounts, live reload)
+### Two compose files, one `.env`
 
-When exploring or modifying code, respect these boundaries. A backend change lives in `backend/`, a frontend change in `frontend/`. Cross-cutting concerns (environment, networking, scripts) live in `infra/`.
+- **`docker-compose.yml`** (root): production. Uses pre-built images, resource limits, `read_only`, `restart: unless-stopped`. No bind mounts.
+- **`dev/docker-compose.yml`**: development. Builds from local Dockerfiles, bind-mounts `frontend/` and `backend/` for live reload. References the shared env as `env_file: ../.env`.
+
+### Dev port convention
+
+Dev services expose ports prefixed with `1` to avoid conflicts with other projects running on standard ports:
+
+| Standard | Dev |
+|----------|-----|
+| 5432 | 15432 |
+| 6379 | 16379 |
+| 8000 | 18000 |
+| 5173 | 15173 |
+
+Internal Docker network ports are unchanged — services talk to each other on standard ports.
+
+When exploring or modifying code, respect these boundaries. A backend change lives in `backend/`, a frontend change in `frontend/`.
 
 ## 9. Docker-First
 
@@ -112,7 +134,7 @@ When exploring or modifying code, respect these boundaries. A backend change liv
 
 - NEVER run language runtimes directly on the host: no `python`, `node`, `npm`, `pip`, `poetry`, `go`, `ruby`, etc.
 - NEVER install project dependencies on the host: no `npm install`, `pip install`, `bundle install`, etc.
-- ALL project commands go through Docker: `docker compose -f infra/dev/docker-compose.yml exec <service> <command>`
+- ALL project commands go through Docker: `docker compose -f dev/docker-compose.yml exec <service> <command>`
 - The only tools allowed on the host are: `docker`, `git`, `gh`, and other system-level tools explicitly listed in `dev-workflow`.
 
 **Why**: dependency conflicts, version mismatches, and environment drift are eliminated. What runs in Docker is exactly what runs in production.
