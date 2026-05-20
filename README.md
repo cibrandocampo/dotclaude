@@ -169,7 +169,7 @@ Claude explores the target area, produces a numbered findings table grouped by s
 | `git-conventions` | Before every commit and branch creation |
 | `security` | Before every commit — full checklist against the diff |
 | `test-discipline` | When writing or debugging any test |
-| `ci` | When creating or modifying GitHub Actions workflows — pipeline structure, Codecov, Docker publishing, dependency conventions |
+| `ci` | When creating or modifying GitHub Actions workflows — Docker-first testing, pipeline structure, Codecov, Docker publishing |
 | `api-design` | When designing or reviewing REST endpoints |
 | `dev-workflow` | For all Docker commands during development |
 | `backend-patterns` | When writing backend code — conventions and structure |
@@ -185,6 +185,7 @@ Claude explores the target area, produces a numbered findings table grouped by s
 | `.claude/skills/dev-workflow/SKILL.md` | Actual service names, test commands, lint commands, migration commands |
 | `.claude/skills/backend-patterns/SKILL.md` | Language, framework, DB, project structure, naming conventions |
 | `.claude/skills/frontend-patterns/SKILL.md` | Framework, routing, state, styling, design tokens, component patterns |
-| `.github/workflows/ci.yml` | Real lint, test, and build commands — replace the no-op placeholders |
+| `.github/workflows/ci.yml` | Real lint, test, and build commands — replace the `<placeholder>` values |
+| `.github/workflows/weekly-rebuild.yml` | Docker Hub org and image names |
 | `MEMORY.md` (project root) | Gotchas, architecture decisions, environment quirks — populated over time |
 | `CLAUDE.md` | Merge with any project-specific behavioral rules |

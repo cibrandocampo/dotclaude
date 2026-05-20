@@ -1,13 +1,15 @@
 ---
 name: ci
-description: GitHub Actions CI conventions — pipeline structure, triggers, Docker image publishing, Codecov integration, dependency management, and weekly rebuilds. Use when creating or modifying CI workflows.
+description: GitHub Actions CI conventions — pipeline structure, Docker-first testing, Docker image publishing, Codecov integration, and weekly rebuilds. Use when creating or modifying CI workflows.
 ---
 
 # CI — GitHub Actions
 
-## Pipeline Philosophy
+## Philosophy
 
-Tests gate everything. Images are never built from untested code. Code coverage is tracked on every PR. Images rebuild weekly to pick up base image security patches.
+The same Docker image that runs locally also runs in CI. No native language runtimes on the runner — no `setup-python`, no `npm install`, no `pip`. Every test and lint command goes through `docker compose -f dev/docker-compose.yml`, exactly as it does on the developer's machine. This eliminates the "works on my machine" class of CI failures.
+
+Coverage files written by the test command appear on the host automatically because the dev compose bind-mounts the source directories (`backend/` and `frontend/`). No extraction step needed.
 
 ---
 
@@ -15,14 +17,11 @@ Tests gate everything. Images are never built from untested code. Code coverage 
 
 Three workflows. Each has a single responsibility.
 
-### 1. `ci.yml` — Test and build on every push/PR
+### 1. `ci.yml` — test and build on every push and PR
 
-**Triggers**:
-- `push` to `main`
-- `pull_request` targeting `main`
-- `release` published (to also build and tag stable images)
+**Triggers**: push to `main`, PR targeting `main`, release published.
 
-**Jobs and their order**:
+**Job graph**:
 
 ```
 test-backend ──┐
@@ -31,8 +30,8 @@ test-frontend ─┤
                └──→ build-frontend
 ```
 
-- Test jobs run in parallel, unconditionally (every push and PR).
-- Build jobs run only after both test jobs pass, and only on `push` or `release` (not on PRs).
+- Test jobs run in parallel on every push and PR.
+- Build/push jobs run only after both test jobs pass, and only on `push` or `release` (not on PRs).
 
 ```yaml
 build-backend:
@@ -40,114 +39,72 @@ build-backend:
   if: github.event_name == 'push' || github.event_name == 'release'
 ```
 
-### 2. `weekly-rebuild.yml` — Rebuild images without cache
+### 2. `weekly-rebuild.yml` — rebuild images without cache
 
 **Trigger**: cron, every Monday at 06:00 UTC.
 
-Rebuilds Docker images with `--no-cache: true` to pick up base image patches and transitive dependency bugfixes. Does **not** run tests — the code hasn't changed, only dependencies. The CI pipeline already gates every code change.
+Rebuilds production Docker images with `no-cache: true` to pick up base image patches and transitive dependency fixes. Does not run tests — the code has not changed.
 
 ### 3. `site-deploy.yml` _(if applicable)_
 
-Deploys a landing/docs site to GitHub Pages on every push to `main`. Separate from the main CI to keep concerns isolated.
+Deploys a docs or landing site to GitHub Pages on push to `main`. Keep it separate from CI to isolate concerns.
 
 ---
 
 ## Test Jobs
 
-Each test job uses native runners (not Docker) with service containers for infrastructure dependencies.
+### Pattern
 
-### Backend (Python)
+Each test job follows the same sequence:
 
-```yaml
-test-backend:
-  runs-on: ubuntu-latest
-  services:
-    postgres:
-      image: postgres:17-alpine
-      env:
-        POSTGRES_DB: <db>
-        POSTGRES_USER: <user>
-        POSTGRES_PASSWORD: <password>
-      ports:
-        - 5432:5432
-      options: >-
-        --health-cmd pg_isready
-        --health-interval 10s
-        --health-timeout 5s
-        --health-retries 5
-    redis:
-      image: redis:8-alpine
-      ports:
-        - 6379:6379
-      options: >-
-        --health-cmd "redis-cli ping"
-        --health-interval 10s
-        --health-timeout 5s
-        --health-retries 5
-  defaults:
-    run:
-      working-directory: backend
-  steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
-      with:
-        python-version: '3.13'
-        cache: pip
-        cache-dependency-path: backend/requirements.txt
-    - run: pip install -r requirements.txt -r ../dev/requirements.txt
-    - run: ruff check .
-    - run: ruff format --check .
-    - run: coverage run manage.py test
-      env:
-        DATABASE_URL: postgres://<user>:<password>@localhost:5432/<db>
-        REDIS_URL: redis://localhost:6379/0
-        DJANGO_SECRET_KEY: ci-secret-key-not-used-in-production
-        DJANGO_DEBUG: 'True'
-    - run: coverage xml
-    # Monorepo path fix: coverage.xml paths are relative to backend/ but
-    # Codecov needs them relative to the repo root (backend/apps/...).
-    - run: sed -i 's|filename="|filename="backend/|g' coverage.xml
-    - uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: backend/coverage.xml
-        flags: backend
-        fail_ci_if_error: false
-        verbose: true
+```
+1. checkout
+2. create .env from .env.example (CI overrides via env:)
+3. docker compose build <service>
+4. docker compose run --rm --no-deps <service> <lint-command>
+5. docker compose run --rm <service> <test-with-coverage-command>
+6. upload coverage to Codecov
 ```
 
-### Frontend (Node)
+**`--no-deps` for lint**: lint does not need infrastructure (db, redis). Pass `--no-deps` to skip starting dependency services and speed up the step.
+
+**No `--no-deps` for tests**: `docker compose run` starts services declared in `depends_on`. If those services have a `healthcheck`, use `condition: service_healthy` in `depends_on` so the runner waits for them to be ready before executing the test command.
+
+### Environment variables in CI
+
+The dev compose references `env_file: ../.env`. In CI, create the file from `.env.example` and override with job-level `env:`:
 
 ```yaml
-test-frontend:
-  runs-on: ubuntu-latest
-  defaults:
-    run:
-      working-directory: frontend
-  steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-node@v5
-      with:
-        node-version: '22'
-        cache: npm
-        cache-dependency-path: frontend/package-lock.json
-    - run: corepack enable npm && corepack prepare npm@11 --activate
-    - run: npm ci
-    - run: npm run lint -- --max-warnings 0
-    - run: npm run test:coverage
-    - uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: frontend/coverage/coverage-final.json
-        flags: frontend
-        fail_ci_if_error: false
+- name: Create env file
+  run: cp .env.example .env
+
+- name: Test
+  run: docker compose -f dev/docker-compose.yml run --rm backend <test-command>
+  env:
+    DATABASE_URL: postgres://<user>:<password>@db:5432/<db>
+    REDIS_URL: redis://redis:6379/0
+```
+
+Secrets go in GitHub Actions secrets (Settings → Secrets → Actions), not in `.env.example`.
+
+### Coverage extraction
+
+Because `dev/docker-compose.yml` bind-mounts the source directory into the container, any file the test command writes to the working directory appears on the host automatically:
+
+- A test command writing `coverage.xml` to `/app/` inside the container → file appears at `backend/coverage.xml` on the host.
+- Upload that file directly with `codecov/codecov-action`.
+
+If paths in the coverage file are relative to the service directory but Codecov needs repo-root-relative paths, apply the sed fix before uploading:
+
+```bash
+sed -i 's|filename="|filename="backend/|g' backend/coverage.xml
 ```
 
 ---
 
-## Docker Build Jobs
+## Build / Push Jobs
 
-Build jobs publish multi-platform images to Docker Hub.
+Build jobs produce production images and push them to Docker Hub. They use `docker/build-push-action` (not dev compose) with multi-platform builds and GHA layer caching.
 
 ```yaml
 build-backend:
@@ -155,23 +112,23 @@ build-backend:
   if: github.event_name == 'push' || github.event_name == 'release'
   runs-on: ubuntu-latest
   steps:
-    - uses: actions/checkout@v6
-    - uses: docker/setup-qemu-action@v4
-    - uses: docker/setup-buildx-action@v4
-    - uses: docker/login-action@v4
+    - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v6
+      uses: docker/metadata-action@v5
       with:
         images: <dockerhub-org>/<project>-backend
         tags: |
           type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
           type=raw,value=stable,enable=${{ github.event_name == 'release' }}
           type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
-    - uses: docker/build-push-action@v7
+    - uses: docker/build-push-action@v6
       with:
         context: ./backend
         platforms: linux/amd64,linux/arm64
@@ -181,7 +138,7 @@ build-backend:
         cache-from: type=gha
         cache-to: type=gha,mode=max
     - name: Update Docker Hub description
-      uses: peter-evans/dockerhub-description@v5
+      uses: peter-evans/dockerhub-description@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -201,62 +158,23 @@ build-backend:
 
 ## Codecov Integration
 
-### Required secret
-
-Add `CODECOV_TOKEN` to the repository secrets (Settings → Secrets → Actions). Get it from [codecov.io](https://codecov.io) after linking the repository.
-
 ### Flags
 
 Use `flags:` to separate backend and frontend coverage in the Codecov dashboard:
-- `flags: backend`
-- `flags: frontend`
 
-### Monorepo path fix
-
-`coverage xml` generates paths relative to the working directory (e.g. `apps/models.py`). Codecov needs them relative to the repo root (`backend/apps/models.py`). Always apply the sed fix before uploading:
-
-```bash
-sed -i 's|filename="|filename="backend/|g' coverage.xml
+```yaml
+- uses: codecov/codecov-action@v5
+  with:
+    token: ${{ secrets.CODECOV_TOKEN }}
+    files: backend/coverage.xml      # path on the host after bind-mount extraction
+    flags: backend
+    fail_ci_if_error: false          # Codecov outage must not block merges
+    verbose: true
 ```
 
 ### `fail_ci_if_error: false`
 
-Codecov upload failures do not block CI. Coverage reporting is observability — a Codecov outage should not prevent merging.
-
----
-
-## Python Dependency Conventions
-
-### Production (`backend/requirements.txt`)
-
-Use **compatible release** (`~=`) for all production dependencies:
-
-```
-django~=5.2
-djangorestframework~=3.16
-celery[redis]~=5.5
-```
-
-`~=5.2` means `>=5.2, <6.0` — gets patch and minor updates automatically, protects against breaking major version changes. This is the right balance between staying current on security patches and stability.
-
-Never use unpinned (`django`) or overly strict (`django==5.2.1`) in production requirements — unpinned breaks reproducibility, overly strict blocks security patches.
-
-### Dev-only (`dev/requirements.txt`)
-
-Use **minimum version** (`>=`) for dev tools:
-
-```
-coverage>=7.4
-ruff>=0.8
-```
-
-Dev tools can update freely. Strict pinning on linters creates unnecessary friction with no safety benefit.
-
-### Updating dependencies
-
-- Review changelogs before bumping a major version.
-- `~=` handles minor/patch updates automatically via `pip install -r requirements.txt`.
-- For a deliberate major bump: update the version specifier, test locally, then commit.
+Coverage reporting is observability, not a gate. A Codecov outage should never block a merge.
 
 ---
 
@@ -267,11 +185,3 @@ Dev tools can update freely. Strict pinning on linters creates unnecessary frict
 | `CODECOV_TOKEN` | codecov.io → repository settings |
 | `DOCKERHUB_USERNAME` | Docker Hub account username |
 | `DOCKERHUB_TOKEN` | Docker Hub → Account Settings → Personal Access Tokens |
-
----
-
-## Caching
-
-- **Python**: `actions/setup-python` with `cache: pip` and `cache-dependency-path: backend/requirements.txt`
-- **Node**: `actions/setup-node` with `cache: npm` and `cache-dependency-path: frontend/package-lock.json`
-- **Docker layers**: `cache-from: type=gha` / `cache-to: type=gha,mode=max` on all build jobs and weekly rebuild

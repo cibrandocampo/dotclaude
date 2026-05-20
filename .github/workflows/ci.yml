@@ -5,28 +5,153 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  release:
+    types: [published]
 
 jobs:
-  backend:
+  test-backend:
     name: Backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create env file
+        run: cp .env.example .env
+
+      - name: Build
+        run: docker compose -f dev/docker-compose.yml build backend
+
       - name: Lint
-        run: docker compose -f dev/docker-compose.yml run --rm backend echo "no-op — replace with actual lint command"
+        # --no-deps: lint does not need db/redis
+        run: docker compose -f dev/docker-compose.yml run --rm --no-deps backend <lint-command>
+        # e.g.: ruff check . && ruff format --check .
 
       - name: Test
-        run: docker compose -f dev/docker-compose.yml run --rm backend echo "no-op — replace with actual test command"
+        # depends_on services (db, redis) start automatically
+        run: docker compose -f dev/docker-compose.yml run --rm backend <test-with-coverage-command>
+        # e.g.: coverage run manage.py test && coverage xml
+        env:
+          DATABASE_URL: postgres://<user>:<password>@db:5432/<db>
+          REDIS_URL: redis://redis:6379/0
+          # Add any other CI-specific overrides here
 
-  frontend:
+      # Coverage file appears on the host via bind mount (backend/ → /app/)
+      # If paths are relative to backend/, apply the monorepo fix:
+      # run: sed -i 's|filename="|filename="backend/|g' backend/coverage.xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: backend/<coverage-file>
+          # e.g.: backend/coverage.xml
+          flags: backend
+          fail_ci_if_error: false
+          verbose: true
+
+  test-frontend:
     name: Frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create env file
+        run: cp .env.example .env
+
+      - name: Build
+        run: docker compose -f dev/docker-compose.yml build frontend
+
       - name: Lint
-        run: docker compose -f dev/docker-compose.yml run --rm frontend echo "no-op — replace with actual lint command"
+        run: docker compose -f dev/docker-compose.yml run --rm --no-deps frontend <lint-command>
+        # e.g.: npm run lint -- --max-warnings 0
 
       - name: Test
-        run: docker compose -f dev/docker-compose.yml run --rm frontend echo "no-op — replace with actual test command"
+        run: docker compose -f dev/docker-compose.yml run --rm --no-deps frontend <test-with-coverage-command>
+        # e.g.: npm run test:coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: frontend/<coverage-file>
+          # e.g.: frontend/coverage/coverage-final.json
+          flags: frontend
+          fail_ci_if_error: false
+
+  build-backend:
+    name: Build & Push Backend
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push' || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: <dockerhub-org>/<project>-backend
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=stable,enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: <dockerhub-org>/<project>-backend
+          readme-filepath: ./README.md
+
+  build-frontend:
+    name: Build & Push Frontend
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push' || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: <dockerhub-org>/<project>-frontend
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=stable,enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: <dockerhub-org>/<project>-frontend
+          readme-filepath: ./README.md
