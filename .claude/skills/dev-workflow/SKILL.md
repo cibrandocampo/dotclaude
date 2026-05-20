@@ -5,7 +5,15 @@ description: Development commands and environment setup for this project. Custom
 
 # Dev Workflow
 
-> **Customize this skill for your project.** Replace service names and commands with the actual ones for your stack. The Docker-first rule is non-negotiable — see CLAUDE.md section 9.
+> **THIS SKILL HAS NOT BEEN FILLED IN.**
+>
+> All commands below are placeholders (`<lint-command>`, `<test-command>`, etc.).
+> **Do not assume any service names, commands, or configuration.**
+> Before running any project command, ask the user:
+> - What services does this project have?
+> - What are the actual lint, test, build, and migration commands?
+>
+> Fill in this skill before starting any development work. See README.md for instructions.
 
 ## Project Layout
 

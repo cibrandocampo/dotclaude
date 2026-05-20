@@ -5,7 +5,16 @@ description: Backend architecture patterns and conventions for this project. Cus
 
 # Backend Patterns
 
-> **Customize this skill for your project.** Fill in each section with the actual conventions and patterns used. Reference the `architecture` skill for layer responsibilities.
+> **THIS SKILL HAS NOT BEEN FILLED IN.**
+>
+> All sections below are empty templates (`# e.g. ...`).
+> **Do not assume any language, framework, structure, or naming conventions.**
+> Before writing any backend code, ask the user:
+> - What language and framework does this project use?
+> - What is the directory structure under `backend/`?
+> - What naming conventions and patterns are established?
+>
+> Fill in this skill before starting any backend work. See README.md for instructions.
 
 ## Stack
 
