@@ -13,14 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build
-        run: docker compose -f dev/docker-compose.yml build backend
-
       - name: Lint
-        run: docker compose -f dev/docker-compose.yml run --rm backend <lint-command>
+        run: docker compose -f dev/docker-compose.yml run --rm backend echo "no-op — replace with actual lint command"
 
       - name: Test
-        run: docker compose -f dev/docker-compose.yml run --rm backend <test-command>
+        run: docker compose -f dev/docker-compose.yml run --rm backend echo "no-op — replace with actual test command"
 
   frontend:
     name: Frontend
@@ -28,11 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build
-        run: docker compose -f dev/docker-compose.yml build frontend
-
       - name: Lint
-        run: docker compose -f dev/docker-compose.yml run --rm frontend <lint-command>
+        run: docker compose -f dev/docker-compose.yml run --rm frontend echo "no-op — replace with actual lint command"
 
       - name: Test
-        run: docker compose -f dev/docker-compose.yml run --rm frontend <test-command>
+        run: docker compose -f dev/docker-compose.yml run --rm frontend echo "no-op — replace with actual test command"

@@ -1,0 +1,15 @@
+# Template — replace with your project's actual services and images.
+# See CLAUDE.md §8 for port conventions and §9 for Docker-first rules.
+
+services:
+  backend:
+    image: alpine
+    command: sh -c "echo 'backend placeholder' && sleep infinity"
+    ports:
+      - "18000:8000"
+
+  frontend:
+    image: alpine
+    command: sh -c "echo 'frontend placeholder' && sleep infinity"
+    ports:
+      - "15173:5173"
