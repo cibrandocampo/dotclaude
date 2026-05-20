@@ -1,0 +1,18 @@
+# Production — pre-built images, no bind mounts.
+# For development, use dev/docker-compose.yml instead.
+# See CLAUDE.md §8 for the two-compose-files convention.
+
+services:
+  backend:
+    image: <dockerhub-org>/<project>-backend:latest
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: <dockerhub-org>/<project>-frontend:latest
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - "80:80"
