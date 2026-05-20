@@ -55,6 +55,7 @@ The template covers:
     git-conventions/ # Commit format, branch naming, pre-commit sequence
     security/        # Security checklist for every commit
     test-discipline/ # How to write and debug tests
+    ci/              # GitHub Actions conventions — pipeline, Codecov, Docker publishing
     memory-conventions/ # What goes in MEMORY.md vs Claude's auto-memory
 CLAUDE.md            # Behavioral guidelines — the foundation of everything
 ```
